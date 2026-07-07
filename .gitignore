@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Production
+dist/
+build/
+.cache/
+.parcel-cache/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.d.ts
+*.tsbuildinfo
+
+# Misc
+.history/
+.turbo/
+coverage/
