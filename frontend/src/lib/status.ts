@@ -12,3 +12,21 @@ export function statusColor(status: FlagStatus): string {
       return "gray";
   }
 }
+
+export function statusLabel(status: FlagStatus): string {
+  return {
+    ready: "Ready",
+    warning: "Needs tag",
+    "bad-state": "Wrong state",
+    "no-ticket": "No ticket",
+  }[status];
+}
+
+export function statusDot(status: FlagStatus): string {
+  return {
+    ready: "dot-green",
+    warning: "dot-amber",
+    "bad-state": "dot-red",
+    "no-ticket": "dot-grey",
+  }[status];
+}
