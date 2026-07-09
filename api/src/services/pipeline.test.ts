@@ -86,9 +86,16 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
     rules: loadRules(),
   };
   const res = await buildCandidates("July 23", NOW, deps);
-  expect(res.candidates.map((c) => c.key)).toEqual(["pr:100"]); // pr:101 skipped
+  expect(res.candidates.map((c) => c.key)).toEqual(["pr:100"]); // pr:101 held for July 23
   expect(res.candidates[0].status).toBe("ready");
   expect(res.noTicket.map((c) => c.key)).toEqual(["patch:c3"]);
   expect(res.stats).toMatchObject({ ready: 1, noTicket: 1 });
   expect(res.availableReleases).toContain("July 23");
+
+  // pr:101 is a `hold` for July 23 only — it must reappear for a different release.
+  const other = await buildCandidates("August 6", NOW, deps);
+  expect(other.candidates.map((c) => c.key).sort()).toEqual([
+    "pr:100",
+    "pr:101",
+  ]);
 });

@@ -41,4 +41,10 @@ describe("rules.evaluate", () => {
       true,
     );
   });
+  it("requireWorkItemReference=false makes a reference-less candidate ready", () => {
+    const relaxed = { ...RULES, requireWorkItemReference: false };
+    expect(evaluate([t({ workItemType: "Task" })], relaxed, NOW).status).toBe(
+      "ready",
+    );
+  });
 });

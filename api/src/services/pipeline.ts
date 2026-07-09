@@ -63,13 +63,17 @@ export async function buildCandidates(
   deps: PipelineDeps = realDeps(),
 ): Promise<CandidatesResponse> {
   const skips = await deps.listSkips();
-  const skipKeys = new Set(skips.map((s) => `${s.repo} ${s.key}`));
+  // permanent skips hide a candidate for every release; hold skips ("this
+  // release only") are release-scoped and applied after the target is resolved.
+  const permanentKeys = new Set(
+    skips.filter((s) => s.kind !== "hold").map((s) => `${s.repo} ${s.key}`),
+  );
 
   const discovered: DiscoveredCandidate[] = [];
   for (const repo of deps.repos) {
     const found = await deps.discover(repo);
     for (const c of found)
-      if (!skipKeys.has(`${c.repo} ${c.key}`)) discovered.push(c);
+      if (!permanentKeys.has(`${c.repo} ${c.key}`)) discovered.push(c);
   }
 
   const repoIdByName = new Map(deps.repos.map((r) => [r.name, r.repoId]));
@@ -86,10 +90,21 @@ export async function buildCandidates(
   const availableReleases = activeReleaseTags(allTags, now);
   const targetRelease = release ?? availableReleases[0] ?? "";
 
+  // Hold skips only hide the candidate for the release they were held for —
+  // honoring the dismiss UI's "hold (this release only)" choice.
+  const holdKeysForRelease = new Set(
+    skips
+      .filter(
+        (s) => s.kind === "hold" && s.dismissedForRelease === targetRelease,
+      )
+      .map((s) => `${s.repo} ${s.key}`),
+  );
+
   const candidates: FreezeCandidate[] = [];
   const noTicket: FreezeCandidate[] = [];
 
   for (const { candidate, ids } of links) {
+    if (holdKeysForRelease.has(`${candidate.repo} ${candidate.key}`)) continue;
     const tickets: Ticket[] = ids.map(({ id, viaPr }) => {
       const wi = wiMap.get(id);
       return {

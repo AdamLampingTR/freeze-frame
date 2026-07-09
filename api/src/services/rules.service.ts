@@ -17,8 +17,16 @@ export function evaluate(
   const relevant = tickets.filter((t) =>
     rules.workItemTypes.includes(t.workItemType),
   );
-  if (relevant.length === 0)
-    return { status: "no-ticket", flags: [], excluded: false };
+  if (relevant.length === 0) {
+    // requireWorkItemReference gates whether a missing US/Bug link is surfaced:
+    // true (the default) routes the candidate to the no-ticket bucket; false
+    // treats a reference-less candidate as ready (no work item required).
+    return {
+      status: rules.requireWorkItemReference ? "no-ticket" : "ready",
+      flags: [],
+      excluded: false,
+    };
+  }
 
   const flags: string[] = [];
   let worst: FlagStatus = "ready";
