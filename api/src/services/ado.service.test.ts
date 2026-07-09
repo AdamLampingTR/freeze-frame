@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { commitsBatch, fetchWorkItems } from "./ado.service";
 
 const OLD_ENV = { ...process.env };
 
@@ -38,7 +39,6 @@ describe("ado.service", () => {
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    const { commitsBatch } = await import("./ado.service");
     const commits = await commitsBatch("REPOID", "staging", "development", 100);
     expect(commits).toHaveLength(1);
     expect(commits[0].commitId).toBe("abc123def");
@@ -71,7 +71,6 @@ describe("ado.service", () => {
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    const { fetchWorkItems } = await import("./ado.service");
     const map = await fetchWorkItems(["1165133"]);
     const wi = map.get("1165133")!;
     expect(wi.workItemType).toBe("User Story");
@@ -82,7 +81,6 @@ describe("ado.service", () => {
   it("fetchWorkItems returns empty map for no ids without calling fetch", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    const { fetchWorkItems } = await import("./ado.service");
     expect((await fetchWorkItems([])).size).toBe(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });

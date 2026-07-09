@@ -1,0 +1,94 @@
+import { it, expect } from "vitest";
+import { buildCandidates } from "./pipeline";
+import { loadRules } from "../config";
+import type { RawWorkItem } from "./ado.service";
+
+const NOW = new Date("2026-07-09T00:00:00Z");
+
+it("assembles candidates, applies skips, splits the no-ticket bucket, computes stats", async () => {
+  const deps = {
+    repos: [
+      {
+        name: "TT.AskDI",
+        repoId: "R",
+        devBranch: "development",
+        stagingBranch: "staging",
+      },
+    ],
+    discover: async () => [
+      {
+        key: "pr:100",
+        repo: "TT.AskDI",
+        prId: 100,
+        commitId: "c1",
+        subject: "Merged PR 100: ADO-1000001 a",
+        author: "a@example.com",
+      },
+      {
+        key: "pr:101",
+        repo: "TT.AskDI",
+        prId: 101,
+        commitId: "c2",
+        subject: "Merged PR 101: ADO-1000002 b",
+        author: "b@example.com",
+      },
+      {
+        key: "patch:c3",
+        repo: "TT.AskDI",
+        prId: null,
+        commitId: "c3",
+        subject: "hotfix",
+        author: "c@example.com",
+      },
+    ],
+    resolve: async (c: { prId: number | null }) =>
+      c.prId === 100
+        ? [{ id: "1000001", viaPr: false }]
+        : c.prId === 101
+          ? [{ id: "1000002", viaPr: false }]
+          : [],
+    fetchWorkItems: async () =>
+      new Map<string, RawWorkItem>([
+        [
+          "1000001",
+          {
+            id: 1000001,
+            title: "A",
+            state: "Verified",
+            workItemType: "User Story",
+            assignedTo: "a@example.com",
+            tags: ["July 23"],
+          },
+        ],
+        [
+          "1000002",
+          {
+            id: 1000002,
+            title: "B",
+            state: "Active",
+            workItemType: "Bug",
+            assignedTo: "b@example.com",
+            tags: ["SRE"],
+          },
+        ],
+      ]),
+    listSkips: async () => [
+      {
+        repo: "TT.AskDI",
+        key: "pr:101",
+        dismissedBy: "x",
+        dismissedAt: "t",
+        reason: "held" as const,
+        kind: "hold" as const,
+        dismissedForRelease: "July 23",
+      },
+    ],
+    rules: loadRules(),
+  };
+  const res = await buildCandidates("July 23", NOW, deps);
+  expect(res.candidates.map((c) => c.key)).toEqual(["pr:100"]); // pr:101 skipped
+  expect(res.candidates[0].status).toBe("ready");
+  expect(res.noTicket.map((c) => c.key)).toEqual(["patch:c3"]);
+  expect(res.stats).toMatchObject({ ready: 1, noTicket: 1 });
+  expect(res.availableReleases).toContain("July 23");
+});
