@@ -20,8 +20,8 @@ param branch string = 'main'
 @secure()
 param repositoryToken string = ''
 
-@description('Dashboard URL used in notification payloads. Azure assigns a random default hostname on creation (e.g. yellow-dune-028a21210.7.azurestaticapps.net) that cannot be predicted ahead of deploy — update this parameter (and the app setting) once the real hostname is known, or set a custom domain.')
-param dashboardUrl string = 'https://${staticWebAppName}.azurestaticapps.net'
+@description('Dashboard URL used in notification payloads. Leave empty to use the resource\'s own assigned hostname (resolved automatically on both fresh-create and redeploy); set explicitly only to override with a custom domain.')
+param dashboardUrl string = ''
 
 @secure()
 param adoReposPat string
@@ -72,7 +72,7 @@ resource appSettings 'Microsoft.Web/staticSites/config@2022-09-01' = {
     SKIP_TABLE_CONNECTION_STRING: skipTableConnectionString
     POWER_AUTOMATE_WEBHOOK_URL: powerAutomateWebhookUrl
     NOTIFY_DRY_RUN: notifyDryRun
-    DASHBOARD_URL: dashboardUrl
+    DASHBOARD_URL: empty(dashboardUrl) ? 'https://${staticWebApp.properties.defaultHostname}' : dashboardUrl
   }
 }
 

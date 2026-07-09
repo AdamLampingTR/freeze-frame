@@ -29,10 +29,11 @@ Preview first with `az deployment group what-if` (same args, swap `create` for
 
 ## Notes
 
-- **`dashboardUrl`** defaults to a guess based on `staticWebAppName`, but Azure
-  assigns a random hostname (e.g. `yellow-dune-028a21210.7.azurestaticapps.net`)
-  on first creation that can't be predicted ahead of deploy. After a from-scratch
-  restore, re-run with the real hostname once known (or set a custom domain).
+- **`dashboardUrl`** defaults to empty, which resolves `DASHBOARD_URL` to the
+  resource's own `defaultHostname` — correct on both a from-scratch restore
+  (where Azure assigns a random hostname like `yellow-dune-028a21210.7.azurestaticapps.net`
+  that can't be predicted ahead of deploy) and a redeploy against the existing
+  resource. Only pass `dashboardUrl` explicitly to override with a custom domain.
 - **`repositoryToken`** is only needed the first time the resource is created,
   to wire up the GitHub Actions deployment workflow. Redeploying against the
   existing, already-linked resource doesn't need it.
