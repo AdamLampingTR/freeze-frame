@@ -1,5 +1,6 @@
 {
   "requiredStates": ["Verified", "Closed"],
   "requireReleaseTag": true,
-  "requireWorkItemReference": true
+  "requireWorkItemReference": true,
+  "workItemTypes": ["User Story", "Bug"]
 }
