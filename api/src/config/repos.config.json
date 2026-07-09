@@ -1,0 +1,14 @@
+[
+  {
+    "name": "TT.AskDI",
+    "repoId": "1bc795ea-7164-4ac0-830c-8206a584ccb8",
+    "devBranch": "development",
+    "stagingBranch": "staging"
+  },
+  {
+    "name": "TT.OfficeAddin",
+    "repoId": "a3895bd8-d32c-4cc3-b82e-9fe613ac7e8d",
+    "devBranch": "dev",
+    "stagingBranch": "staging"
+  }
+]

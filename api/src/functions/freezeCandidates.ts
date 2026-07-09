@@ -4,26 +4,19 @@ import {
   HttpResponseInit,
   InvocationContext,
 } from "@azure/functions";
-import type { FreezeCandidate } from "../types";
-
-export const MOCK_CANDIDATES: FreezeCandidate[] = [
-  {
-    key: "pr:12345",
-    repo: "TT.AskDI",
-    prId: 12345,
-    commitId: "abc12345",
-    title: "Mock candidate",
-    author: "someone",
-    tickets: [],
-    status: "no-ticket",
-  },
-];
+import { buildCandidates } from "../services/pipeline";
 
 export async function freezeCandidates(
-  _req: HttpRequest,
-  _ctx: InvocationContext,
+  req: HttpRequest,
+  ctx: InvocationContext,
 ): Promise<HttpResponseInit> {
-  return { jsonBody: MOCK_CANDIDATES };
+  const release = req.query.get("release") ?? undefined;
+  try {
+    return { jsonBody: await buildCandidates(release, new Date()) };
+  } catch (err) {
+    ctx.error("freezeCandidates failed", err);
+    return { status: 502, jsonBody: { error: (err as Error).message } };
+  }
 }
 
 app.http("freezeCandidates", {

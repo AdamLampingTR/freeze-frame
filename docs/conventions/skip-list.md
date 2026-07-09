@@ -21,11 +21,16 @@ already have while keeping the write path server-side behind the API.
 - **Key on the PR-ID** (`pr:<id>` prefix), because discovery dedupes by PR-ID
   and squash/re-merge changes the commit SHA. A SHA-keyed skip would silently
   stop matching after a re-merge and resurface a dismissed commit.
-- **Fallback for genuinely PR-less commits:** key on `git patch-id --stable`
-  (`patch:<hash>` prefix), not the raw SHA. A rebase or cherry-pick produces a
-  new SHA but the same patch-id, so a re-applied dismissed commit stays
-  dismissed. (patch-id is already computed in the `ccd` scripts — reuse that,
-  don't reimplement.)
+- **Fallback for genuinely PR-less commits:** key on `patch:<sha>`. The design
+  intent is `git patch-id --stable` (a rebase/cherry-pick keeps the same
+  patch-id, so a re-applied dismissed commit would stay dismissed), but SWA
+  managed Functions run on a read-only filesystem and cannot execute git (see
+  `docs/conventions/api.md` / `.claude/rules/api.md`). So the implemented
+  fallback keys on the **raw commit SHA** as a documented compromise, with the
+  known limitation that a re-applied PR-less commit gets a new SHA and would
+  resurface. This only affects PR-less commits; the common PR-keyed path is
+  squash/re-merge-safe as designed. (patch-id can be revisited if the diff ever
+  moves to a git-capable agent — see the pipeline fallback in the spec.)
 - The `pr:` / `patch:` RowKey prefixes exist specifically so the two keyspaces
   can't collide.
 
