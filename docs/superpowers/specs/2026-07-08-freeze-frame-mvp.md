@@ -296,9 +296,14 @@ status). Which types count is data-driven in `rules.config.json`
 Jared's dashboard):
 
 - `Ticket.workItemType: string` — so the UI and the D1 filter can see the type.
-- `FreezeCandidate.viaPr: boolean` — whether the work-item link was found via
-  the PR-title/branch fallback (`true`) rather than the commit subject
-  (`false`). Surfaced so a reviewer can see *how* a ticket was linked.
+- `Ticket.assignedTo: string | null` — the work item's assignee email (for the
+  notify recipient set).
+- `Ticket.viaPr: boolean` — whether the work-item link was found via the
+  PR-title/branch/refs fallback (`true`) rather than the commit subject
+  (`false`). Per-ticket (matching the reference dashboard's render), so a
+  reviewer can see *how* each ticket was linked.
+- `FreezeCandidate.flags: string[]` — human-readable flag lines for the UI and
+  the notify payload.
 
 The non-PR / no-ticket bucket is represented on `FreezeCandidate` (candidates
 with `prId === null` and/or no tickets); the frontend groups them into the
