@@ -1,8 +1,6 @@
 ---
 description: Skip list invariants and conventions
-globs:
-  - api/**/skip*
-  - api/**/dismiss*
+globs: api/**/skip*, api/**/dismiss*
 alwaysApply: false
 ---
 Skip list invariants (load-bearing — the biggest false-positive lever):
