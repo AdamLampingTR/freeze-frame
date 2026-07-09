@@ -1,0 +1,5 @@
+{
+  "requiredStates": ["Verified", "Closed"],
+  "requireReleaseTag": true,
+  "requireWorkItemReference": true
+}
