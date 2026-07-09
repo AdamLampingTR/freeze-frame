@@ -16,6 +16,7 @@ export const MOCK_CANDIDATES: FreezeCandidate[] = [
     author: "someone",
     tickets: [],
     status: "no-ticket",
+    flags: [],
   },
 ];
 
