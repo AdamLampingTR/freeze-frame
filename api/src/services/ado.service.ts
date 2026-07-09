@@ -6,7 +6,8 @@ const API = "api-version=7.1";
 export interface RawCommit {
   commitId: string;
   comment: string;
-  author: { email: string; name: string } | null;
+  author: { email: string; name: string; date?: string } | null;
+  committer?: { date?: string } | null;
 }
 export interface RawWorkItem {
   id: number;

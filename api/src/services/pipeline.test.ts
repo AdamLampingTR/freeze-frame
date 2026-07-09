@@ -21,6 +21,7 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
         repo: "TT.AskDI",
         prId: 100,
         commitId: "c1",
+        committedDate: "2026-07-01T00:00:00Z",
         subject: "Merged PR 100: ADO-1000001 a",
         author: "a@example.com",
       },
@@ -29,6 +30,7 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
         repo: "TT.AskDI",
         prId: 101,
         commitId: "c2",
+        committedDate: "2026-07-02T00:00:00Z",
         subject: "Merged PR 101: ADO-1000002 b",
         author: "b@example.com",
       },
@@ -37,6 +39,7 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
         repo: "TT.AskDI",
         prId: null,
         commitId: "c3",
+        committedDate: "2026-07-03T00:00:00Z",
         subject: "hotfix",
         author: "c@example.com",
       },
@@ -92,10 +95,9 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
   expect(res.stats).toMatchObject({ ready: 1, noTicket: 1 });
   expect(res.availableReleases).toContain("July 23");
 
-  // pr:101 is a `hold` for July 23 only — it must reappear for a different release.
+  // Switching release changes the set: pr:100 is tagged July 23 → out of scope
+  // for August 6; pr:101's July-23 hold no longer applies and it's untagged →
+  // in scope. Exercises both hold-scoping and release-scoping together.
   const other = await buildCandidates("August 6", NOW, deps);
-  expect(other.candidates.map((c) => c.key).sort()).toEqual([
-    "pr:100",
-    "pr:101",
-  ]);
+  expect(other.candidates.map((c) => c.key).sort()).toEqual(["pr:101"]);
 });

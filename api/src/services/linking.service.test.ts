@@ -22,7 +22,7 @@ describe("linking pure helpers", () => {
 });
 
 describe("resolveTicketIds", () => {
-  const base = { repo: "TT.AskDI", commitId: "c1", author: null };
+  const base = { repo: "TT.AskDI", commitId: "c1", committedDate: "", author: null };
 
   it("uses commit-subject ids when present (viaPr=false), skips PR fetch", async () => {
     let prFetched = false;

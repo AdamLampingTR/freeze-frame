@@ -9,7 +9,7 @@ import { resolveTicketIds } from "./linking.service";
 import { fetchWorkItems, mapLimit, type RawWorkItem } from "./ado.service";
 import { listSkips } from "./skip.service";
 import { evaluate } from "./rules.service";
-import { activeReleaseTags } from "./releaseTag.service";
+import { activeReleaseTags, isReleaseTag } from "./releaseTag.service";
 import type {
   CandidatesResponse,
   FreezeCandidate,
@@ -52,6 +52,18 @@ export async function discoveredKeys(
     for (const c of await deps.discover(repo)) keys.add(`${c.repo} ${c.key}`);
   }
   return keys;
+}
+
+// Whether a candidate belongs to the selected freeze. A candidate is in scope
+// if it carries no release tag at all (untagged → needs a tag decision for any
+// upcoming freeze, so always surfaced) or one of its release tags matches the
+// target. A candidate tagged only for other releases belongs to those freezes
+// and is hidden — this is what makes the release picker actually filter.
+function inScopeForRelease(tickets: Ticket[], release: string): boolean {
+  if (!release) return true;
+  const releaseTags = tickets.flatMap((t) => t.tags.filter(isReleaseTag));
+  if (releaseTags.length === 0) return true;
+  return releaseTags.includes(release);
 }
 
 // The full pipeline for both repos: discover → skip-filter → link → batch-fetch
@@ -119,12 +131,14 @@ export async function buildCandidates(
     });
     const result = evaluate(tickets, deps.rules, now);
     if (result.excluded) continue; // past-tag-only → already shipped
+    if (!inScopeForRelease(tickets, targetRelease)) continue; // tagged for another freeze
 
     const fc: FreezeCandidate = {
       key: candidate.key,
       repo: candidate.repo,
       prId: candidate.prId,
       commitId: candidate.commitId,
+      committedDate: candidate.committedDate,
       title: candidate.subject,
       author: candidate.author,
       tickets,

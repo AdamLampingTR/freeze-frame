@@ -7,6 +7,7 @@ const candidate: FreezeCandidate = {
   repo: "TT.AskDI",
   prId: 100,
   commitId: "abc12345",
+  committedDate: "2026-07-01T00:00:00Z",
   title: "Merged PR 100",
   author: "author@example.com",
   tickets: [

@@ -10,6 +10,7 @@ export interface DiscoveredCandidate {
   repo: string;
   prId: number | null;
   commitId: string;
+  committedDate: string; // ISO
   subject: string;
   author: string | null;
 }
@@ -46,6 +47,7 @@ export async function discoverCandidates(
     const subject = (c.comment ?? "").split("\n")[0];
     const prId = parsePrId(subject);
     const author = c.author?.email ?? null;
+    const committedDate = c.committer?.date ?? c.author?.date ?? "";
     if (prId !== null) {
       if (applied.has(prId) || seenPr.has(prId)) continue; // already shipped / already a candidate
       seenPr.add(prId);
@@ -54,6 +56,7 @@ export async function discoverCandidates(
         repo: repo.name,
         prId,
         commitId: c.commitId,
+        committedDate,
         subject,
         author,
       });
@@ -63,6 +66,7 @@ export async function discoverCandidates(
         repo: repo.name,
         prId: null,
         commitId: c.commitId,
+        committedDate,
         subject,
         author,
       });

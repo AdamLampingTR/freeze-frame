@@ -27,6 +27,7 @@ export interface FreezeCandidate {
   repo: string; // "TT.AskDI" | "TT.OfficeAddin"
   prId: number | null;
   commitId: string;
+  committedDate: string; // ISO commit date (for chronological ordering)
   title: string; // commit subject, first line
   author: string | null; // email
   tickets: Ticket[];
