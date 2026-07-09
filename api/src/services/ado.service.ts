@@ -51,13 +51,22 @@ async function req<T>(
       ...(init?.headers ?? {}),
     },
   });
+  const endpoint = url.split("?")[0];
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    throw new Error(`ADO ${res.status} ${endpoint}: ${text.slice(0, 200)}`);
+  }
+  // A bad/expired PAT often yields 200 with an HTML sign-in page rather than a
+  // 4xx, which would otherwise surface as a cryptic "Unexpected token '<'" JSON
+  // parse error. Detect the non-JSON body and name the likely cause.
+  const body = await res.text();
+  try {
+    return JSON.parse(body) as T;
+  } catch {
     throw new Error(
-      `ADO ${res.status} ${url.split("?")[0]}: ${text.slice(0, 200)}`,
+      `ADO returned a non-JSON response from ${endpoint} (status ${res.status}) — likely an authentication failure; check the service PAT. Body starts: ${body.slice(0, 60).replace(/\s+/g, " ")}`,
     );
   }
-  return (await res.json()) as T;
 }
 
 // Bounded-concurrency map — keeps us under the 230s ceiling and gentle on ADO.
