@@ -24,7 +24,15 @@ export function CandidateRow({
         <span className={`dot ${statusDot(c.status)}`} />
         <span className="badge">{c.repo}</span>
         {c.prId != null ? (
-          <span className="pr">PR {c.prId}</span>
+          <a
+            className="pr"
+            href={`https://dev.azure.com/ThoughtTrace/ThoughtTrace%20Core/_git/${c.repo}/pullrequest/${c.prId}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            PR {c.prId}
+          </a>
         ) : (
           <span className="pr muted">no PR</span>
         )}

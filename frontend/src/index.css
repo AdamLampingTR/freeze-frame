@@ -165,6 +165,11 @@ h1 {
   font-size: 1em;
   cursor: pointer;
 }
+.notify-menu {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
 .skip-panel {
   margin-top: 2rem;
   border-top: 1px solid #ddd;
