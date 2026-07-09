@@ -1,0 +1,6 @@
+---
+description: API (Azure Functions) conventions
+globs: api/**
+alwaysApply: false
+---
+Azure Functions v4, HTTP-triggered only (no timers/Durable). Read-only filesystem: never write local files or run git at runtime — all state via ADO REST + Table Storage. Any single response must finish within ~230s; batch ADO work-item fetches. All ADO calls go through `ado.service.ts`. Auth is anonymous at the Function level (SWA handles auth). See `docs/conventions/api.md`.
