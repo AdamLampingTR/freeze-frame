@@ -251,3 +251,69 @@ Front-loads the risky integrations so blockers surface while there's time to rea
 ## Fallback: ADO pipeline + Blob `$web`
 
 Kept as a documented alternative if SWA becomes unworkable. An ADO pipeline references the GitHub code, runs the diff + rule logic as a build step (on an agent that *does* have git — so Jared's bash could run closer to as-is there), renders `index.html` into the existing Storage Account `$web` container, and calls the same Power Automate webhook for notifications. Trade-off: the dashboard becomes a published report of the last run rather than a live app, and loses the interactive dismiss/un-skip round-trips (the skip list would need the pipeline to read the Table and the UI to be regenerated). The diff/linking/rules/notification logic is shared, so falling back is a repackaging exercise — though the interactive skip-list UX is the piece that degrades most, which is another reason to prefer the SWA path.
+
+---
+
+## Confirmed refinements (2026-07-09)
+
+Recorded when the build kicked off. These fold the sub-page Phase 1/3 details
+into the build target and lock the execution decisions. Where a refinement adds
+to the body above, the refinement wins.
+
+### Decisions locked at kickoff
+
+- **Data source:** real ADO, live — the API hits real `TT.AskDI` /
+  `TT.OfficeAddin` commits, PRs, and work items for the working example.
+- **Persistence / notifications:** real Azure Table Storage
+  (`fluffyttisancusfrontend`) **and** the real Power Automate webhook. A
+  `NOTIFY_DRY_RUN` flag stays available so dev runs don't page real people, but
+  the working-example target is the real flow.
+- **Runtime ADO PATs (local):** reuse the already-exported read-scoped MCP
+  tokens — `ADO_REPOS_MCP_AUTH_TOKEN` (ThoughtTrace / Code read) as
+  `ADO_REPOS_PAT`, `ADO_MCP_AUTH_TOKEN` (tr-core-ai-data-platforms / Work Items
+  read) as `ADO_WORKITEMS_PAT`. No dedicated service PATs minted for the demo.
+- **Deploy:** build + verify locally, open a **draft PR to `main`**
+  (hackathon-POC exception per `AGENTS.md`); the human merge to `main`
+  auto-deploys the SWA. The agent never pushes to `main`.
+- **Scope:** the entire MVP in one pass — all six endpoints, skip list,
+  dismiss/un-skip, notify, non-PR/no-ticket bucket, and cherry-pick copy —
+  before the working example is called done.
+
+### D1 — work-item type filter (User Story + Bug only)
+
+From Phase 1 ("Only show user stories and bugs") — a requirement implemented in
+**no** prior tool (all of them fetch every linked work item regardless of type).
+`ado.service` includes `System.WorkItemType` in the work-item fetch, and
+`rules.service` considers only work items whose type is **User Story** or
+**Bug** when evaluating state/tag flags. Other types (Task, Test Case, etc.)
+linked to a candidate are ignored for flagging (not shown as tickets that drive
+status). Which types count is data-driven in `rules.config.json`
+(`workItemTypes: ["User Story", "Bug"]`) so it tunes without code changes.
+
+### D2 — contract additions
+
+`shared/types.ts` gains two fields the prior contract lacked (both carried by
+Jared's dashboard):
+
+- `Ticket.workItemType: string` — so the UI and the D1 filter can see the type.
+- `FreezeCandidate.viaPr: boolean` — whether the work-item link was found via
+  the PR-title/branch fallback (`true`) rather than the commit subject
+  (`false`). Surfaced so a reviewer can see *how* a ticket was linked.
+
+The non-PR / no-ticket bucket is represented on `FreezeCandidate` (candidates
+with `prId === null` and/or no tickets); the frontend groups them into the
+collapsed section rather than a separate payload shape.
+
+### D3 — release "to/from" date range → Phase 2
+
+Phase 1's "allow specifying 'to' and 'from' dates" is **out of the MVP**. The
+single target-release picker (defaulting to the nearest upcoming release, per
+*Target release selection*) covers the MVP case. Date-range filtering is
+deferred to Phase 2.
+
+### Also confirmed consistent (no change)
+
+- Inline ADO-state editing (`PATCH /api/freeze-candidates/{id}`) stays **Phase
+  2** — the MVP is view-only, matching Phase 1/3.
+- Valid states remain `["Verified", "Closed"]` per `rules.config.json`;
+  `Verified` is the primary per Phase 1.
