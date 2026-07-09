@@ -91,13 +91,21 @@ it("assembles candidates, applies skips, splits the no-ticket bucket, computes s
   const res = await buildCandidates("July 23", NOW, deps);
   expect(res.candidates.map((c) => c.key)).toEqual(["pr:100"]); // pr:101 held for July 23
   expect(res.candidates[0].status).toBe("ready");
+  expect(res.candidates[0].matchesRelease).toBe(true); // tagged July 23
+  expect(res.candidates[0].releaseTags).toEqual(["July 23"]);
   expect(res.noTicket.map((c) => c.key)).toEqual(["patch:c3"]);
   expect(res.stats).toMatchObject({ ready: 1, noTicket: 1 });
   expect(res.availableReleases).toContain("July 23");
 
-  // Switching release changes the set: pr:100 is tagged July 23 → out of scope
-  // for August 6; pr:101's July-23 hold no longer applies and it's untagged →
-  // in scope. Exercises both hold-scoping and release-scoping together.
+  // Highlight, not filter: switching release keeps everything visible (only the
+  // July-23 hold is released for August 6). pr:100 is still shown even though it
+  // is tagged for another freeze — just no longer flagged matchesRelease.
   const other = await buildCandidates("August 6", NOW, deps);
-  expect(other.candidates.map((c) => c.key).sort()).toEqual(["pr:101"]);
+  expect(other.candidates.map((c) => c.key).sort()).toEqual([
+    "pr:100",
+    "pr:101",
+  ]);
+  expect(other.candidates.find((c) => c.key === "pr:100")!.matchesRelease).toBe(
+    false,
+  );
 });

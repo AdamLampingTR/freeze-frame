@@ -33,6 +33,8 @@ export interface FreezeCandidate {
   tickets: Ticket[];
   status: FlagStatus;
   flags: string[]; // human-readable flag lines (for UI + notify payload)
+  releaseTags: string[]; // release tags on the candidate's US/Bug tickets (for the row header)
+  matchesRelease: boolean; // a ticket tag resolves to the selected target release
 }
 
 export interface SkipEntry {

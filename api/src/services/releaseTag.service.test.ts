@@ -3,6 +3,7 @@ import {
   isReleaseTag,
   classifyTags,
   activeReleaseTags,
+  sameRelease,
 } from "./releaseTag.service";
 
 const NOW = new Date("2026-07-09T00:00:00Z");
@@ -42,5 +43,14 @@ describe("releaseTag.service", () => {
       "July 9",
       "July 23",
     ]);
+  });
+
+  it("dedupes ISO and month-name spellings of the same freeze", () => {
+    // "2026-07-23" and "July 23" resolve to the same date → one picker option.
+    expect(activeReleaseTags(["July 23", "2026-07-23"], NOW)).toEqual([
+      "July 23",
+    ]);
+    expect(sameRelease("2026-07-23", "July 23", NOW)).toBe(true);
+    expect(sameRelease("July 9", "July 23", NOW)).toBe(false);
   });
 });

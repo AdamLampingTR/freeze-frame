@@ -9,7 +9,11 @@ import { resolveTicketIds } from "./linking.service";
 import { fetchWorkItems, mapLimit, type RawWorkItem } from "./ado.service";
 import { listSkips } from "./skip.service";
 import { evaluate } from "./rules.service";
-import { activeReleaseTags, isReleaseTag } from "./releaseTag.service";
+import {
+  activeReleaseTags,
+  isReleaseTag,
+  resolveEpoch,
+} from "./releaseTag.service";
 import type {
   CandidatesResponse,
   FreezeCandidate,
@@ -52,18 +56,6 @@ export async function discoveredKeys(
     for (const c of await deps.discover(repo)) keys.add(`${c.repo} ${c.key}`);
   }
   return keys;
-}
-
-// Whether a candidate belongs to the selected freeze. A candidate is in scope
-// if it carries no release tag at all (untagged → needs a tag decision for any
-// upcoming freeze, so always surfaced) or one of its release tags matches the
-// target. A candidate tagged only for other releases belongs to those freezes
-// and is hidden — this is what makes the release picker actually filter.
-function inScopeForRelease(tickets: Ticket[], release: string): boolean {
-  if (!release) return true;
-  const releaseTags = tickets.flatMap((t) => t.tags.filter(isReleaseTag));
-  if (releaseTags.length === 0) return true;
-  return releaseTags.includes(release);
 }
 
 // The full pipeline for both repos: discover → skip-filter → link → batch-fetch
@@ -112,6 +104,7 @@ export async function buildCandidates(
       .map((s) => `${s.repo} ${s.key}`),
   );
 
+  const targetEpoch = targetRelease ? resolveEpoch(targetRelease, now) : NaN;
   const candidates: FreezeCandidate[] = [];
   const noTicket: FreezeCandidate[] = [];
 
@@ -131,7 +124,19 @@ export async function buildCandidates(
     });
     const result = evaluate(tickets, deps.rules, now);
     if (result.excluded) continue; // past-tag-only → already shipped
-    if (!inScopeForRelease(tickets, targetRelease)) continue; // tagged for another freeze
+
+    // Release tags on the candidate's US/Bug tickets (for the row header), and
+    // whether any resolves to the selected freeze — highlight, not filter, so a
+    // PR mistakenly tagged for another release stays visible as a signal. Epoch
+    // comparison makes this robust to ISO vs month-name spelling.
+    const relevant = tickets.filter((t) =>
+      deps.rules.workItemTypes.includes(t.workItemType),
+    );
+    const relTags = relevant.flatMap((t) => t.tags.filter(isReleaseTag));
+    const releaseTags = Array.from(new Set(relTags));
+    const matchesRelease =
+      Number.isFinite(targetEpoch) &&
+      relTags.some((tag) => resolveEpoch(tag, now) === targetEpoch);
 
     const fc: FreezeCandidate = {
       key: candidate.key,
@@ -144,6 +149,8 @@ export async function buildCandidates(
       tickets,
       status: result.status,
       flags: result.flags,
+      releaseTags,
+      matchesRelease,
     };
     if (fc.status === "no-ticket") noTicket.push(fc);
     else candidates.push(fc);

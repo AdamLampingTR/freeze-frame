@@ -61,13 +61,28 @@ export function classifyTags(
   };
 }
 
+// Active release tags within the recency window, deduped by resolved date so a
+// single freeze tagged in both forms (`2026-07-23` and `July 23`) collapses to
+// one picker option. Keeps the first-seen spelling for each date.
 export function activeReleaseTags(tags: string[], now: Date): string[] {
   const t = now.getTime();
-  const unique = Array.from(new Set(tags.filter(isReleaseTag)));
-  return unique
-    .filter((tag) => {
-      const delta = resolveEpoch(tag, now) - t;
-      return delta > -45 * DAY && delta < 60 * DAY;
-    })
-    .sort((a, b) => resolveEpoch(a, now) - resolveEpoch(b, now));
+  const byEpoch = new Map<number, string>();
+  for (const tag of tags) {
+    if (!isReleaseTag(tag)) continue;
+    const epoch = resolveEpoch(tag, now);
+    const delta = epoch - t;
+    if (delta > -45 * DAY && delta < 60 * DAY && !byEpoch.has(epoch)) {
+      byEpoch.set(epoch, tag);
+    }
+  }
+  return Array.from(byEpoch.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([, tag]) => tag);
+}
+
+// True iff two release tags name the same freeze (same resolved date), robust
+// to ISO vs month-name spelling.
+export function sameRelease(a: string, b: string, now: Date): boolean {
+  if (!isReleaseTag(a) || !isReleaseTag(b)) return false;
+  return resolveEpoch(a, now) === resolveEpoch(b, now);
 }

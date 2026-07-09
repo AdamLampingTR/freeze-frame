@@ -23,6 +23,8 @@ const candidate: FreezeCandidate = {
   ],
   status: "bad-state",
   flags: ["❌ ..."],
+  releaseTags: [],
+  matchesRelease: false,
 };
 
 afterEach(() => {
@@ -43,13 +45,11 @@ it("dedupes recipients and does not POST when NOTIFY_DRY_RUN=1", async () => {
 
 it("POSTs the webhook payload when not in dry-run", async () => {
   process.env.POWER_AUTOMATE_WEBHOOK_URL = "https://flow.example/hook";
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({
-      ok: true,
-      status: 202,
-      text: async () => "",
-    } as Response);
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    status: 202,
+    text: async () => "",
+  } as Response);
   vi.stubGlobal("fetch", fetchMock);
   await notifyCandidate(candidate, "email");
   expect(fetchMock).toHaveBeenCalledOnce();
