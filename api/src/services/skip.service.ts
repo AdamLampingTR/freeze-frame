@@ -21,8 +21,13 @@ function getTable(deps?: Deps): TableLike {
   }) as unknown as TableLike;
 }
 
-// Key on PR-ID (`pr:<id>`); fall back to `patch:<sha>` for PR-less commits —
-// never the raw SHA alone at the semantic level (squash/re-merge changes it).
+// Key on PR-ID (`pr:<id>`); fall back to `patch:<sha>` for PR-less commits.
+// The skip-list design calls for `git patch-id --stable` here so a rebased /
+// cherry-picked commit stays dismissed, but managed Functions have a read-only
+// filesystem and cannot run git (see .claude/rules/api.md), so patch-id is not
+// computable server-side. Documented compromise: PR-less skips key on the raw
+// commit SHA, with the known limitation that a re-applied commit gets a new SHA
+// and would resurface. PR-keyed skips (the common case) are unaffected.
 export function skipKeyFor(candidate: { prId: number | null; commitId: string }): string {
   return candidate.prId !== null ? `pr:${candidate.prId}` : `patch:${candidate.commitId}`;
 }
