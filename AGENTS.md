@@ -6,13 +6,13 @@ Release-readiness dashboard for code-freeze prep. Agent-agnostic memory — poin
 
 - **MANDATORY:** every code task follows `/implement-from-spec` (`.claude/skills/implement-from-spec/SKILL.md`). The build target is `docs/superpowers/specs/2026-07-08-freeze-frame-mvp.md`.
 - **Definition of done:** `/verify-freeze-frame` passes — typecheck + lint + test in both `frontend/` and `api/`, and the local loop serves `GET /api/freeze-candidates`.
-- **PRs:** feature branch → PR → CI gate → **human merge** (never commit to `main`; it auto-deploys). Draft PR, ADO work-item link in the description, `AI Generated` label. See `/creating-pull-requests`.
+- **PRs:** feature branch → PR → CI gate → **human merge** (never commit to `main`; it auto-deploys). Draft PR, ADO work-item link in the description, `AI Generated` label. **Hackathon-POC exception:** on this repo a POC PR may be published (non-draft) and omit the work-item link — say "hackathon POC" in the description. See `/creating-pull-requests`.
 
 ## Project
 
 - **Repo:** `AdamLampingTR/freeze-frame` (SWA: `frontend/` static assets + `api/` HTTP Functions).
 - **Stack:** React+TS+Vite · Azure Functions v4 (TS) · Azure Table Storage · ADO REST · Power Automate webhook.
-- **Monitors:** `TT.AskDI` (`development`→`staging`), `TT.OfficeAddin` (`dev`→`staging`), single ADO project `CoCounsel` in organization `tr-core-ai-data-platforms`.
+- **Monitors:** `TT.AskDI` (`development`→`staging`), `TT.OfficeAddin` (`dev`→`staging`) — repos/PRs live in the `ThoughtTrace` org (project `ThoughtTrace Core`); their linked work items live in project `CoCounsel` in organization `tr-core-ai-data-platforms`. Two ADO orgs, not one.
 
 ## Quick Commands
 

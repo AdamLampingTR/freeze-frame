@@ -37,7 +37,7 @@ Notifications remain the **Power Automate webhook we already built and tested** 
 - **Skip list:** Azure Table Storage in the existing `fluffyttisancusfrontend` account; PR-ID keyed; durable / global with release context recorded; visible and reversible in the UI.
 - **Non-PR / no-ticket commits:** surfaced in a collapsed section, not flagged red, never silently dropped.
 - **Refresh:** manual, request-driven. No server-side timer (managed Functions are HTTP-only).
-- **Scope:** single project, `tr-core-ai-data-platforms`. *(Confirm both TT.AskDI and TT.OfficeAddin live under it.)*
+- **Scope:** two ADO orgs — repos/PRs in `ThoughtTrace` (project `ThoughtTrace Core`), work items in `tr-core-ai-data-platforms` (project `CoCounsel`). *(Confirm both TT.AskDI and TT.OfficeAddin live under `ThoughtTrace`/`ThoughtTrace Core`.)*
 - **Users:** primarily lead devs; also release managers.
 - **Notifications:** manual per-candidate trigger → Power Automate webhook → both Outlook email and Teams adaptive card. Recipients = commit author + ADO assignee.
 - **Fallback:** ADO pipeline rendering a static report to Storage `$web`. Documented at the end.
@@ -48,7 +48,9 @@ Managed Functions are **HTTP-triggered only** (no cron, no Durable) — hence ma
 
 ## Branch / repo scope
 
-Single project `tr-core-ai-data-platforms`, two repos:
+Repos/PRs in the `ThoughtTrace` org (project `ThoughtTrace Core`); their
+linked work items in the `tr-core-ai-data-platforms` org (project
+`CoCounsel`). Two repos:
 
 - **TT.AskDI:** `development` → `staging`
 - **TT.OfficeAddin:** `dev` → `staging`
@@ -211,8 +213,8 @@ MVP limits (carried): manual only (no auto-notify), no notification history, no 
 
 SWA application settings, read via `process.env`:
 
-- `AZURE_DEVOPS_PAT` — service PAT, Code (read) + Work Items (read)
-- `AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT` (`tr-core-ai-data-platforms`)
+- `ADO_REPOS_ORG` (`ThoughtTrace`), `ADO_REPOS_PROJECT` (`ThoughtTrace Core`), `ADO_REPOS_PAT` — service PAT, Code (read)
+- `ADO_WORKITEMS_ORG` (`tr-core-ai-data-platforms`), `ADO_WORKITEMS_PROJECT` (`CoCounsel`), `ADO_WORKITEMS_PAT` — service PAT, Work Items (read)
 - `SKIP_TABLE_CONNECTION_STRING` — Table Storage in `fluffyttisancusfrontend`
 - `POWER_AUTOMATE_WEBHOOK_URL`
 - `DASHBOARD_URL`

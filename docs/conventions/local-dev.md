@@ -33,11 +33,19 @@ rest.
 
 ## The one dependency that can't be emulated: ADO REST
 
-Use a **read-only PAT** (Code read + Work Items read — the same scopes as the
-deployed service PAT, see `docs/conventions/ado-access.md`) in
-`local.settings.json`. Optionally record/replay JSON fixtures for fully
-offline development — the `ccd` scripts already carry canned responses that
-can be reused rather than re-recorded.
+Use two **read-only PATs** — one per org, same scopes as the deployed
+service PATs, see `docs/conventions/ado-access.md` — in
+`local.settings.json`: `ADO_REPOS_PAT` (Code read, on `ThoughtTrace`) and
+`ADO_WORKITEMS_PAT` (Work Items read, on `tr-core-ai-data-platforms`).
+Optionally record/replay JSON fixtures for fully offline development — the
+`ccd` scripts already carry canned responses that can be reused rather than
+re-recorded.
+
+Separately, dev-time MCP tooling (used interactively, not by the Functions
+runtime) authenticates via `ADO_MCP_AUTH_TOKEN` (tickets,
+`tr-core-ai-data-platforms`) and `ADO_REPOS_MCP_AUTH_TOKEN` (repos,
+`ThoughtTrace`) — see `.mcp.json`. These are distinct env vars from the
+runtime PATs above.
 
 ## Notifications: dry-run by default locally
 
@@ -50,8 +58,10 @@ Testing locally must never email or Teams-ping real people. See
 
 | Variable | Local value |
 |---|---|
-| `AZURE_DEVOPS_PAT` | read-only PAT (Code read, Work Items read) |
-| `AZURE_DEVOPS_ORG` / `AZURE_DEVOPS_PROJECT` | same as deployed (`tr-core-ai-data-platforms`) |
+| `ADO_REPOS_ORG` / `ADO_REPOS_PROJECT` | same as deployed (`ThoughtTrace` / `ThoughtTrace Core`) |
+| `ADO_REPOS_PAT` | read-only PAT, Code (read), on `ThoughtTrace` |
+| `ADO_WORKITEMS_ORG` / `ADO_WORKITEMS_PROJECT` | same as deployed (`tr-core-ai-data-platforms` / `CoCounsel`) |
+| `ADO_WORKITEMS_PAT` | read-only PAT, Work Items (read), on `tr-core-ai-data-platforms` |
 | `SKIP_TABLE_CONNECTION_STRING` | `UseDevelopmentStorage=true` (Azurite) |
 | `NOTIFY_DRY_RUN` | `1` |
 | `POWER_AUTOMATE_WEBHOOK_URL` | not required when `NOTIFY_DRY_RUN=1` |
@@ -59,3 +69,8 @@ Testing locally must never email or Teams-ping real people. See
 All of the above live in gitignored `api/local.settings.json` — see
 `api/local.settings.json.example` for the template, and never commit a real
 PAT or webhook URL into any tracked file.
+
+Dev-time MCP tokens are separate from the runtime vars above and are not set
+in `local.settings.json` — they live in the shell environment as
+`ADO_MCP_AUTH_TOKEN` (tickets) and `ADO_REPOS_MCP_AUTH_TOKEN` (repos), read by
+`.mcp.json`.

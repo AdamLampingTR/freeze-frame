@@ -38,10 +38,12 @@ Concretely:
 
 ## All ADO access goes through `ado.service.ts`
 
-Server-side, direct ADO REST calls, authenticated with a **service PAT**
-stored in SWA application settings (scopes: Code read, Work Items read) — see
-`docs/conventions/ado-access.md` for the org/project split and PAT-scope
-detail. Do not call ADO REST directly from route handlers or other services;
+Server-side, direct ADO REST calls, authenticated with **two service PATs**
+stored in SWA application settings — one per ADO org (`ADO_REPOS_PAT`: Code
+read on `ThoughtTrace`; `ADO_WORKITEMS_PAT`: Work Items read on
+`tr-core-ai-data-platforms`) — see `docs/conventions/ado-access.md` for the
+org/project split and PAT-scope detail. Do not call ADO REST directly from
+route handlers or other services;
 route all ADO calls through `ado.service.ts` so batching, auth, and rate-limit
 handling live in one place. A pasted or Keychain PAT cannot back a shared
 dashboard, and per-request MCP is too heavy server-side — hence the plain
@@ -49,8 +51,12 @@ service-PAT-over-REST approach.
 
 ## Configuration (via `process.env`, from SWA application settings)
 
-- `AZURE_DEVOPS_PAT` — service PAT, Code (read) + Work Items (read)
-- `AZURE_DEVOPS_ORG`, `AZURE_DEVOPS_PROJECT` (`tr-core-ai-data-platforms`)
+- `ADO_REPOS_ORG` (`ThoughtTrace`), `ADO_REPOS_PROJECT` (`ThoughtTrace Core`),
+  `ADO_REPOS_PAT` — service PAT scoped to Code (read); backs commit/PR
+  lookups
+- `ADO_WORKITEMS_ORG` (`tr-core-ai-data-platforms`), `ADO_WORKITEMS_PROJECT`
+  (`CoCounsel`), `ADO_WORKITEMS_PAT` — service PAT scoped to Work Items
+  (read); backs work-item lookups
 - `SKIP_TABLE_CONNECTION_STRING` — Table Storage connection string
 - `POWER_AUTOMATE_WEBHOOK_URL`
 - `DASHBOARD_URL`

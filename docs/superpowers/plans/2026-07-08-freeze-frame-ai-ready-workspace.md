@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Note (2026-07-09):** this plan is a historical record of PR #1's execution. Its embedded config snippets still show the original single-ADO-org assumption; the **ADO org/project topology was corrected to two orgs in PR #2** (repos/PRs in `ThoughtTrace`, work items in `tr-core-ai-data-platforms`/`CoCounsel`). The authoritative, corrected versions live in the MVP spec and `docs/conventions/`.
+
 **Goal:** Prepare `AdamLampingTR/freeze-frame` so an autonomous agent can implement the FreezeFrame MVP against an in-repo spec, with a green/deployable skeleton and self-verifiable guardrails.
 
 **Architecture:** Azure Static Web Apps — a Vite/React/TS frontend (`frontend/`) and HTTP-triggered Azure Functions TS API (`api/`), deployed by the SWA GitHub Actions workflow already on `main`. The agent harness mirrors `atpa-materia_core-services` / `cari-ai-assistant_agentic-draft-service`: `CLAUDE.md` → `AGENTS.md`, `.claude/` as source of truth, committed `.agents/skills` + `.cursor/skills` symlinks.
