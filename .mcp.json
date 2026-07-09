@@ -1,12 +1,32 @@
 {
   "mcpServers": {
     "ado-tickets": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "tr-core-ai-data-platforms"]
+      "args": [
+        "-y",
+        "@azure-devops/mcp",
+        "tr-core-ai-data-platforms",
+        "--authentication",
+        "envvar"
+      ],
+      "env": {
+        "ADO_MCP_AUTH_TOKEN": "${ADO_MCP_AUTH_TOKEN}"
+      }
     },
     "ado-repos": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "ThoughtTrace"]
+      "args": [
+        "-y",
+        "@azure-devops/mcp",
+        "ThoughtTrace",
+        "--authentication",
+        "envvar"
+      ],
+      "env": {
+        "ADO_MCP_AUTH_TOKEN": "${ADO_REPOS_MCP_AUTH_TOKEN}"
+      }
     }
   }
 }

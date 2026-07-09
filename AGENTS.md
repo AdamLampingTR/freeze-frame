@@ -12,7 +12,7 @@ Release-readiness dashboard for code-freeze prep. Agent-agnostic memory — poin
 
 - **Repo:** `AdamLampingTR/freeze-frame` (SWA: `frontend/` static assets + `api/` HTTP Functions).
 - **Stack:** React+TS+Vite · Azure Functions v4 (TS) · Azure Table Storage · ADO REST · Power Automate webhook.
-- **Monitors:** `TT.AskDI` (`development`→`staging`), `TT.OfficeAddin` (`dev`→`staging`), single ADO project `CoCounsel` in organization `tr-core-ai-data-platforms`.
+- **Monitors:** `TT.AskDI` (`development`→`staging`), `TT.OfficeAddin` (`dev`→`staging`) — repos/PRs live in the `ThoughtTrace` org (project `ThoughtTrace Core`); their linked work items live in project `CoCounsel` in organization `tr-core-ai-data-platforms`. Two ADO orgs, not one.
 
 ## Quick Commands
 
