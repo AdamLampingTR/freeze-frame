@@ -14,6 +14,8 @@ api/local.settings.json
 .env
 .env.*
 !.env.example
+# Power Automate export packages — review for embedded connection/tenant info before committing
+infra/power-automate/*.zip
 # Claude Code — ignore personal, keep shared harness
 .claude/*
 !.claude/settings.json

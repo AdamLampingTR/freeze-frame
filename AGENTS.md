@@ -23,7 +23,7 @@ Release-readiness dashboard for code-freeze prep. Agent-agnostic memory — poin
 ## Context Budget
 
 - Always: this file, `.claude/rules/*` (path-scoped), the MVP spec when implementing.
-- When relevant: `docs/conventions/{architecture,api,skip-list,local-dev,ado-access}.md`.
+- When relevant: `docs/conventions/{architecture,api,skip-list,local-dev,ado-access}.md`, `infra/README.md` (SWA restore) and `infra/power-automate/README.md` (flow backup/restore).
 
 ## Architecture
 
