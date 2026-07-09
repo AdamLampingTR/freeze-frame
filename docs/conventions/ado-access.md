@@ -67,6 +67,29 @@ These MCP tokens are independent of the `ADO_REPOS_PAT` / `ADO_WORKITEMS_PAT`
 runtime settings above — the MCP servers are for interactive agent use, the
 runtime PATs back the deployed/local Functions.
 
+### Setting up the MCP tokens
+
+`.mcp.json` runs both servers with `--authentication envvar`, so each reads
+its PAT from the environment — there is **no interactive fallback**. If the
+matching env var isn't exported, that server's ADO tools silently fail to
+authenticate. Set both up once before using the ADO MCP tools:
+
+1. **Mint two PATs** — one per org (a PAT can't span orgs):
+   - `tr-core-ai-data-platforms` (tickets) — https://dev.azure.com/tr-core-ai-data-platforms/_usersSettings/tokens — scope **Work Items (Read)** (+ **Identity (Read)**).
+   - `ThoughtTrace` (repos) — https://dev.azure.com/ThoughtTrace/_usersSettings/tokens — scope **Code (Read)** (+ **Identity (Read)**).
+2. **Export both** so they persist across shells:
+
+   ```bash
+   echo 'export ADO_MCP_AUTH_TOKEN=<tr-core-ai-data-platforms PAT>' >> ~/.zshrc
+   echo 'export ADO_REPOS_MCP_AUTH_TOKEN=<ThoughtTrace PAT>' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+   (bash: use `~/.bashrc`. For a keychain-backed alternative, see the
+   `macos-keychain` convention in `~/.claude/conventions/`.)
+
+Read-only scopes are sufficient — FreezeFrame never writes to ADO.
+
 ## Commit → work-item linking convention
 
 Resolution order, first hit wins:
