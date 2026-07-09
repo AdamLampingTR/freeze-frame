@@ -1,31 +1,26 @@
 {
-  "name": "freeze-frame-frontend",
+  "name": "freeze-frame-api",
   "private": true,
-  "type": "module",
+  "main": "dist/api/src/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "build": "tsc",
+    "start": "func start",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "test": "vitest run"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@azure/functions": "^4.5.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/node": "^20.14.2",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
-    "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.2",
     "typescript": "^5.5.2",
-    "vite": "^5.3.1",
     "vitest": "^1.6.0"
   }
 }

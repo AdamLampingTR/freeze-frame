@@ -1,77 +1,23 @@
 # freeze-frame
 
-## Overview
+FreezeFrame — a release-readiness dashboard for code-freeze prep. Azure Static Web App: `frontend/` (React+Vite) + `api/` (Azure Functions, TS).
 
-A monorepo for cross-functional development with:
-- **Frontend**: TypeScript + React (Vite)
-- **Backend**: Node.js + Express (TypeScript)
+## Agent harness
 
-## Project Structure
+- `CLAUDE.md` imports `AGENTS.md` (agent-agnostic memory).
+- `.claude/` is the source of truth: `rules/` (path-scoped), `skills/`, `settings.json`, `hooks/`.
+- `.agents/skills` and `.cursor/skills` are committed symlinks to `.claude/skills`.
+  - **Windows note:** symlinks require `git config core.symlinks true` (default on macOS/Linux). On Windows without it, they check out as text files.
+- Build target for autonomous work: `docs/superpowers/specs/2026-07-08-freeze-frame-mvp.md`.
 
-```
-freeze-frame/
-├── frontend/          # React + TypeScript web application
-│   ├── src/
-│   ├── package.json
-│   └── tsconfig.json
-├── backend/           # Node.js + Express API server
-│   ├── src/
-│   ├── package.json
-│   └── tsconfig.json
-├── .gitignore
-├── README.md
-└── LICENSE
-```
+## Develop locally
 
-## Getting Started
+    cd frontend && npm install && npm run dev      # http://localhost:5173
+    cd api && npm install && npm run build
 
-### Prerequisites
-- Node.js (v18+)
-- npm or yarn
+Full local loop (dashboard + API + storage): `swa start` + `func start` + Azurite. See `docs/conventions/local-dev.md`. Copy `api/local.settings.json.example` → `api/local.settings.json` (gitignored) and fill in a read-only ADO PAT.
 
-### Installation
+## Verify
 
-1. Clone the repository:
-```bash
-git clone https://github.com/AdamLampingTR/freeze-frame.git
-cd freeze-frame
-```
-
-2. Install frontend dependencies:
-```bash
-cd frontend
-npm install
-```
-
-3. Install backend dependencies:
-```bash
-cd backend
-npm install
-```
-
-### Running Locally
-
-**Frontend Development Server:**
-```bash
-cd frontend
-npm run dev
-```
-
-**Backend Development Server:**
-```bash
-cd backend
-npm run dev
-```
-
-## Development
-
-- **Frontend**: Uses Vite for fast HMR (Hot Module Replacement)
-- **Backend**: Uses nodemon with ts-node for auto-restart on changes
-
-## License
-
-MIT - See LICENSE file for details
-
----
-
-Created: 2026-07-07
+    cd frontend && npm run typecheck && npm run lint && npm run test && npm run build
+    cd api && npm run typecheck && npm run lint && npm run test && npm run build

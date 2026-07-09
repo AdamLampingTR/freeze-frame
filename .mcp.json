@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ado-tickets": {
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "tr-core-ai-data-platforms"]
+    },
+    "ado-repos": {
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "ThoughtTrace"]
+    }
+  }
+}

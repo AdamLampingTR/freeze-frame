@@ -1,0 +1,11 @@
+---
+description: Skip list invariants and conventions
+globs: api/**/skip*, api/**/dismiss*
+alwaysApply: false
+---
+Skip list invariants (load-bearing — the biggest false-positive lever):
+- Key on **PR-ID** (`pr:<id>`); fall back to `git patch-id --stable` (`patch:<hash>`) for PR-less commits — never raw SHA (squash/re-merge changes the SHA).
+- Entity: PartitionKey=repo, RowKey=`pr:<id>`|`patch:<hash>`, plus `dismissedBy`, `dismissedAt`, `reason`, `kind` (`permanent`|`hold`), `dismissedForRelease`.
+- Global-durable by default. Visible + reversible in the UI (un-skip). Prune orphans (intersect with current candidates).
+- The contract lives once in `shared/types.ts`; both `api/src/types.ts` and `frontend/src/types.ts` re-export it (type-only).
+See `docs/conventions/skip-list.md`.

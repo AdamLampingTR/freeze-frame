@@ -1,36 +1,28 @@
 # Dependencies
 node_modules/
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-
-# Production
+# Build output
 dist/
-build/
-.cache/
-.parcel-cache/
-out/
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# TypeScript
-*.d.ts
+frontend/dist/
+api/dist/
+# TS incremental/composite build artifacts (tsc -b emits these next to source)
 *.tsbuildinfo
-
-# Misc
-.history/
-.turbo/
-coverage/
+frontend/vite.config.js
+frontend/vite.config.d.ts
+# Azure Functions local
+api/local.settings.json
+# Env / secrets
+.env
+.env.*
+!.env.example
+# Claude Code — ignore personal, keep shared harness
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/rules/
+!.claude/skills/
+!.claude/commands/
+.claude/settings.local.json
+# Cursor personal
+.cursor/personal/
+# OS
+.DS_Store
