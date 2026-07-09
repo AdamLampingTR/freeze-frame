@@ -1,13 +1,6 @@
 import { useMemo, useState } from "react";
-import type { FreezeCandidate, FlagStatus, NotifyVia } from "../types";
+import type { FreezeCandidate, NotifyVia } from "../types";
 import { CandidateRow } from "./CandidateRow";
-
-const ORDER: Record<FlagStatus, number> = {
-  "bad-state": 0,
-  warning: 1,
-  ready: 2,
-  "no-ticket": 3,
-};
 
 export function CandidateList({
   candidates,
@@ -20,24 +13,40 @@ export function CandidateList({
   onNotify: (c: FreezeCandidate, via: NotifyVia) => void;
   onCopyCherryPick: (c: FreezeCandidate) => void;
 }) {
-  const [filter, setFilter] = useState<"all" | FlagStatus>("all");
+  const [repo, setRepo] = useState<"all" | string>("all");
+
+  const repos = useMemo(
+    () => Array.from(new Set(candidates.map((c) => c.repo))).sort(),
+    [candidates],
+  );
+
   const rows = useMemo(
     () =>
       candidates
-        .filter((c) => filter === "all" || c.status === filter)
+        .filter((c) => repo === "all" || c.repo === repo)
+        // Chronological (oldest first) — matches the order commits are applied
+        // in a cherry-pick, and gives a stable list that doesn't jump around by
+        // severity. ISO date strings sort lexicographically = chronologically.
         .slice()
-        .sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.repo.localeCompare(b.repo)),
-    [candidates, filter],
+        .sort((a, b) => a.committedDate.localeCompare(b.committedDate)),
+    [candidates, repo],
   );
+
   return (
     <section>
-      <div className="filters">
-        {(["all", "bad-state", "warning", "ready"] as const).map((f) => (
-          <button key={f} className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>
-            {f}
+      {repos.length > 1 && (
+        <div className="filters">
+          <span className="filter-label">Repo:</span>
+          <button className={repo === "all" ? "active" : ""} onClick={() => setRepo("all")}>
+            all
           </button>
-        ))}
-      </div>
+          {repos.map((r) => (
+            <button key={r} className={repo === r ? "active" : ""} onClick={() => setRepo(r)}>
+              {r}
+            </button>
+          ))}
+        </div>
+      )}
       {rows.map((c) => (
         <CandidateRow
           key={`${c.repo}:${c.key}`}

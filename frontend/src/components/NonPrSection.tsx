@@ -15,13 +15,16 @@ export function NonPrSection({
 }) {
   const [open, setOpen] = useState(false);
   if (items.length === 0) return null;
+  const ordered = items
+    .slice()
+    .sort((a, b) => a.committedDate.localeCompare(b.committedDate));
   return (
     <section className="nonpr">
       <button className="collapse" onClick={() => setOpen((o) => !o)}>
         {open ? "▾" : "▸"} Non-PR / no-ticket ({items.length})
       </button>
       {open &&
-        items.map((c) => (
+        ordered.map((c) => (
           <CandidateRow
             key={`${c.repo}:${c.key}`}
             c={c}
