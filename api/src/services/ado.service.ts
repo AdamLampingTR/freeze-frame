@@ -58,13 +58,21 @@ async function req<T>(
   }
   // A bad/expired PAT often yields 200 with an HTML sign-in page rather than a
   // 4xx, which would otherwise surface as a cryptic "Unexpected token '<'" JSON
-  // parse error. Detect the non-JSON body and name the likely cause.
+  // parse error. Classify the non-JSON body: only an HTML page is attributed to
+  // auth — an empty or otherwise-non-JSON body gets a neutral message so a
+  // future legitimately-empty 2xx endpoint isn't misreported as an auth failure.
   const body = await res.text();
   try {
     return JSON.parse(body) as T;
   } catch {
+    const trimmed = body.trim();
+    if (trimmed.startsWith("<")) {
+      throw new Error(
+        `ADO returned an HTML page from ${endpoint} (status ${res.status}) — likely an authentication failure; check the service PAT.`,
+      );
+    }
     throw new Error(
-      `ADO returned a non-JSON response from ${endpoint} (status ${res.status}) — likely an authentication failure; check the service PAT. Body starts: ${body.slice(0, 60).replace(/\s+/g, " ")}`,
+      `ADO returned a non-JSON response from ${endpoint} (status ${res.status}). Body starts: ${trimmed.slice(0, 60).replace(/\s+/g, " ") || "(empty)"}`,
     );
   }
 }
