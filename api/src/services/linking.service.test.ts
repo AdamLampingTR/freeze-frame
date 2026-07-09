@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parsePrId, parseAdoIds } from "./linking.service";
+import { parsePrId, parseAdoIds, resolveTicketIds } from "./linking.service";
 
 describe("linking pure helpers", () => {
   it("parses the PR id from a squash-merge subject", () => {
@@ -18,5 +18,61 @@ describe("linking pure helpers", () => {
       "1162189",
     ]);
     expect(parseAdoIds("Merged PR 23521: no ado ref")).toEqual([]);
+  });
+});
+
+describe("resolveTicketIds", () => {
+  const base = { repo: "TT.AskDI", commitId: "c1", author: null };
+
+  it("uses commit-subject ids when present (viaPr=false), skips PR fetch", async () => {
+    let prFetched = false;
+    const deps = {
+      getPullRequest: async () => {
+        prFetched = true;
+        return null;
+      },
+      getPullRequestWorkItemIds: async () => [],
+    };
+    const ids = await resolveTicketIds(
+      {
+        ...base,
+        key: "pr:100",
+        prId: 100,
+        subject: "Merged PR 100: ADO-1000001 x",
+      },
+      "R",
+      deps,
+    );
+    expect(ids).toEqual([{ id: "1000001", viaPr: false }]);
+    expect(prFetched).toBe(false);
+  });
+
+  it("falls back to PR title/branch then PR refs (viaPr=true)", async () => {
+    const deps = {
+      getPullRequest: async () => ({
+        title: "no ado here",
+        sourceRefName: "refs/heads/fix/ADO-1137466-x",
+        createdBy: null,
+      }),
+      getPullRequestWorkItemIds: async () => ["9999999"],
+    };
+    const ids = await resolveTicketIds(
+      { ...base, key: "pr:100", prId: 100, subject: "Merged PR 100: no id" },
+      "R",
+      deps,
+    );
+    expect(ids).toEqual([{ id: "1137466", viaPr: true }]);
+  });
+
+  it("returns [] for a PR-less commit with no ids", async () => {
+    const ids = await resolveTicketIds(
+      { ...base, key: "patch:c1", prId: null, subject: "hotfix" },
+      "R",
+      {
+        getPullRequest: async () => null,
+        getPullRequestWorkItemIds: async () => [],
+      },
+    );
+    expect(ids).toEqual([]);
   });
 });
