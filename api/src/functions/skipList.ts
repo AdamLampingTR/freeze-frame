@@ -5,21 +5,17 @@ import {
   InvocationContext,
 } from "@azure/functions";
 import { listSkips } from "../services/skip.service";
-import { buildCandidates } from "../services/pipeline";
+import { discoveredKeys } from "../services/pipeline";
 
 export async function skipList(
   _req: HttpRequest,
   ctx: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
-    const [skips, all] = await Promise.all([
-      listSkips(),
-      buildCandidates(undefined, new Date()),
-    ]);
-    const live = new Set(
-      [...all.candidates, ...all.noTicket].map((c) => `${c.repo} ${c.key}`),
-    );
-    // Orphans: skipped but no longer in the candidate set (already on staging).
+    // Orphans are detected against the pre-skip-filter discovery set: a dismissed
+    // PR still in dev-not-staging is live; one that has landed on staging drops
+    // out of discovery and is flagged orphan.
+    const [skips, live] = await Promise.all([listSkips(), discoveredKeys()]);
     return {
       jsonBody: skips.map((s) => ({
         ...s,

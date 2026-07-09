@@ -40,6 +40,20 @@ function realDeps(): PipelineDeps {
   };
 }
 
+// The set of `${repo} ${key}` currently discovered in dev-not-staging, BEFORE
+// skip-filtering. Used to detect orphaned skips (a dismissed PR that has since
+// landed on staging drops out of discovery on its own). Cheap — discovery only,
+// no linking/work-item fetch.
+export async function discoveredKeys(
+  deps: Pick<PipelineDeps, "repos" | "discover"> = realDeps(),
+): Promise<Set<string>> {
+  const keys = new Set<string>();
+  for (const repo of deps.repos) {
+    for (const c of await deps.discover(repo)) keys.add(`${c.repo} ${c.key}`);
+  }
+  return keys;
+}
+
 // The full pipeline for both repos: discover → skip-filter → link → batch-fetch
 // work items → rule-evaluate → split into flagged candidates vs the non-PR /
 // no-ticket bucket, with stats and the active release list for the picker.

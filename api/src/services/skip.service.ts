@@ -35,6 +35,7 @@ export async function ensureTable(deps?: Deps): Promise<void> {
 }
 
 export async function listSkips(deps?: Deps): Promise<SkipEntry[]> {
+  await ensureTable(deps);
   const table = getTable(deps);
   const out: SkipEntry[] = [];
   for await (const e of table.listEntities()) {
@@ -53,6 +54,7 @@ export async function listSkips(deps?: Deps): Promise<SkipEntry[]> {
 }
 
 export async function addSkip(entry: SkipEntry, deps?: Deps): Promise<void> {
+  await ensureTable(deps);
   const table = getTable(deps);
   await table.upsertEntity({
     partitionKey: entry.repo,
