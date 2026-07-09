@@ -22,11 +22,18 @@ function connString(): string {
   return conn;
 }
 
-function getTable(deps?: Deps): TableLike {
-  if (deps?.table) return deps.table;
+// Single construction path so the guard and options can't drift between callers
+// (that divergence — a guard in getTable, a bare `!` in ensureTable — is what
+// produced the toLowerCase crash).
+function newTableClient(): TableClient {
   return TableClient.fromConnectionString(connString(), TABLE, {
     allowInsecureConnection: true,
-  }) as unknown as TableLike;
+  });
+}
+
+function getTable(deps?: Deps): TableLike {
+  if (deps?.table) return deps.table;
+  return newTableClient() as unknown as TableLike;
 }
 
 // Key on PR-ID (`pr:<id>`); fall back to `patch:<sha>` for PR-less commits.
@@ -47,10 +54,9 @@ export function skipKeyFor(candidate: {
 
 export async function ensureTable(deps?: Deps): Promise<void> {
   if (deps?.table) return;
-  const client = TableClient.fromConnectionString(connString(), TABLE, {
-    allowInsecureConnection: true,
-  });
-  await client.createTable().catch(() => undefined); // ignore "already exists"
+  await newTableClient()
+    .createTable()
+    .catch(() => undefined); // ignore "already exists"
 }
 
 export async function listSkips(deps?: Deps): Promise<SkipEntry[]> {
