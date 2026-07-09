@@ -18,6 +18,18 @@ function fakeTable(rows: Record<string, unknown>[]) {
   };
 }
 
+it("throws a clear error (not an opaque SDK toLowerCase crash) when the connection string is unset", async () => {
+  const prev = process.env.SKIP_TABLE_CONNECTION_STRING;
+  delete process.env.SKIP_TABLE_CONNECTION_STRING;
+  try {
+    await expect(listSkips()).rejects.toThrow(
+      "SKIP_TABLE_CONNECTION_STRING is not set",
+    );
+  } finally {
+    if (prev !== undefined) process.env.SKIP_TABLE_CONNECTION_STRING = prev;
+  }
+});
+
 it("skipKeyFor prefers pr:<id>, falls back to patch:<sha>", () => {
   expect(skipKeyFor({ prId: 100, commitId: "abc" })).toBe("pr:100");
   expect(skipKeyFor({ prId: null, commitId: "abc" })).toBe("patch:abc");
@@ -56,5 +68,9 @@ it("addSkip writes a row with partition/row keys", async () => {
     dismissedForRelease: "July 23",
   };
   await addSkip(entry, { table: fakeTable(rows) });
-  expect(rows[0]).toMatchObject({ partitionKey: "TT.AskDI", rowKey: "pr:100", reason: "held" });
+  expect(rows[0]).toMatchObject({
+    partitionKey: "TT.AskDI",
+    rowKey: "pr:100",
+    reason: "held",
+  });
 });

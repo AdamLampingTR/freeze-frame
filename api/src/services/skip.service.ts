@@ -12,11 +12,19 @@ interface Deps {
   table?: TableLike;
 }
 
-function getTable(deps?: Deps): TableLike {
-  if (deps?.table) return deps.table;
+// Single guarded read of the connection string — a missing app setting must
+// surface as this clear message, not the opaque "Cannot read properties of
+// undefined (reading 'toLowerCase')" the Table SDK throws on an undefined
+// connection string.
+function connString(): string {
   const conn = process.env.SKIP_TABLE_CONNECTION_STRING;
   if (!conn) throw new Error("SKIP_TABLE_CONNECTION_STRING is not set");
-  return TableClient.fromConnectionString(conn, TABLE, {
+  return conn;
+}
+
+function getTable(deps?: Deps): TableLike {
+  if (deps?.table) return deps.table;
+  return TableClient.fromConnectionString(connString(), TABLE, {
     allowInsecureConnection: true,
   }) as unknown as TableLike;
 }
@@ -28,14 +36,20 @@ function getTable(deps?: Deps): TableLike {
 // computable server-side. Documented compromise: PR-less skips key on the raw
 // commit SHA, with the known limitation that a re-applied commit gets a new SHA
 // and would resurface. PR-keyed skips (the common case) are unaffected.
-export function skipKeyFor(candidate: { prId: number | null; commitId: string }): string {
-  return candidate.prId !== null ? `pr:${candidate.prId}` : `patch:${candidate.commitId}`;
+export function skipKeyFor(candidate: {
+  prId: number | null;
+  commitId: string;
+}): string {
+  return candidate.prId !== null
+    ? `pr:${candidate.prId}`
+    : `patch:${candidate.commitId}`;
 }
 
 export async function ensureTable(deps?: Deps): Promise<void> {
   if (deps?.table) return;
-  const conn = process.env.SKIP_TABLE_CONNECTION_STRING!;
-  const client = TableClient.fromConnectionString(conn, TABLE, { allowInsecureConnection: true });
+  const client = TableClient.fromConnectionString(connString(), TABLE, {
+    allowInsecureConnection: true,
+  });
   await client.createTable().catch(() => undefined); // ignore "already exists"
 }
 
@@ -73,6 +87,10 @@ export async function addSkip(entry: SkipEntry, deps?: Deps): Promise<void> {
   });
 }
 
-export async function removeSkip(repo: string, key: string, deps?: Deps): Promise<void> {
+export async function removeSkip(
+  repo: string,
+  key: string,
+  deps?: Deps,
+): Promise<void> {
   await getTable(deps).deleteEntity(repo, key);
 }
