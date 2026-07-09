@@ -7,8 +7,16 @@ function jsonResponse(body: unknown) {
   return Promise.resolve({
     ok: true,
     status: 200,
-    json: () => Promise.resolve(body),
-  } as Response);
+    text: () => Promise.resolve(JSON.stringify(body)),
+  } as unknown as Response);
+}
+
+function htmlResponse() {
+  return Promise.resolve({
+    ok: true,
+    status: 200,
+    text: () => Promise.resolve("\r\n\r\n<!DOCTYPE html><html>sign in</html>"),
+  } as unknown as Response);
 }
 
 describe("ado.service", () => {
@@ -76,6 +84,13 @@ describe("ado.service", () => {
     expect(wi.workItemType).toBe("User Story");
     expect(wi.tags).toEqual(["July 23", "Ready2Refine"]);
     expect(wi.assignedTo).toBe("user@example.com");
+  });
+
+  it("gives a clear auth-failure message when ADO returns an HTML sign-in page", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(htmlResponse()));
+    await expect(commitsBatch("R", "staging", "development")).rejects.toThrow(
+      /non-JSON response.*authentication failure.*check the service PAT/,
+    );
   });
 
   it("fetchWorkItems returns empty map for no ids without calling fetch", async () => {
