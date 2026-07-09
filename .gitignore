@@ -4,6 +4,10 @@ node_modules/
 dist/
 frontend/dist/
 api/dist/
+# TS incremental/composite build artifacts (tsc -b emits these next to source)
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
 # Azure Functions local
 api/local.settings.json
 # Env / secrets
