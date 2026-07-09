@@ -55,7 +55,7 @@ All ADO access in stages 1–3 goes through `ado.service.ts` — see
   stable across those operations.
 - **Per-candidate fields (conceptual):** repo, PR (or SHA for non-PR), linked
   work item(s) with state and release tags, resolved release-tag verdict,
-  rule-engine status (`ready` / `warning` / `bad-state` / `non-PR`), and
+  rule-engine status (`ready` / `warning` / `bad-state` / `no-ticket`), and
   whether it's currently skipped.
 - **Shared type location:** the contract lives once in `shared/types.ts`;
   `api/src/types.ts` and `frontend/src/types.ts` re-export it (type-only) —
