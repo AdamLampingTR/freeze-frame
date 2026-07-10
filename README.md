@@ -12,10 +12,28 @@ FreezeFrame — a release-readiness dashboard for code-freeze prep. Azure Static
 
 ## Develop locally
 
+**One-time setup:**
+
+    npm i -g azure-functions-core-tools@4 @azure/static-web-apps-cli azurite   # global tools
+    cp api/local.settings.json.example api/local.settings.json                 # gitignored; fill in 2 read-only ADO PATs
+
+**Run the full loop (one command):**
+
+    ./scripts/dev-local.sh
+
+This starts Azurite (skip-list storage), the Functions host, and the SWA dev
+server, then serves everything at **http://localhost:4280** — open that, **not**
+`:5173` (the `/api` routes only exist behind the SWA proxy). Ctrl-C stops all
+three. The skip list uses Azurite and notifications are dry-run by default; only
+ADO is hit for real, hence the read-only PATs.
+
+Prefer to run the pieces yourself, or want to know what each does and why?
+See **`docs/conventions/local-dev.md`**.
+
+Per-package commands (no full loop):
+
     cd frontend && npm install && npm run dev      # http://localhost:5173
     cd api && npm install && npm run build
-
-Full local loop (dashboard + API + storage): `swa start` + `func start` + Azurite. See `docs/conventions/local-dev.md`. Copy `api/local.settings.json.example` → `api/local.settings.json` (gitignored) and fill in a read-only ADO PAT.
 
 ## Verify
 

@@ -18,7 +18,7 @@ Release-readiness dashboard for code-freeze prep. Agent-agnostic memory — poin
 
 - Frontend: `cd frontend && npm run {dev,build,typecheck,lint,test}`
 - API: `cd api && npm run {build,typecheck,lint,test}`; `func start` (needs Core Tools)
-- Local loop: `swa start` (port 4280) + `func start` + Azurite. See `docs/conventions/local-dev.md`.
+- Local loop: **`./scripts/dev-local.sh`** (one command — Azurite + `func start` + `swa start`, serves on port 4280, Ctrl-C tears down). See `docs/conventions/local-dev.md`.
 
 ## Context Budget
 
