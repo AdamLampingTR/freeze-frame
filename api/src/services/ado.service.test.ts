@@ -101,6 +101,25 @@ describe("ado.service", () => {
     );
   });
 
+  it("does NOT attribute an XML body (also starts with '<') to an auth failure", async () => {
+    const xml = () =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve('<?xml version="1.0"?><error>nope</error>'),
+      } as unknown as Response);
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(xml()));
+    let err: Error | undefined;
+    try {
+      await commitsBatch("R", "staging", "development");
+    } catch (e) {
+      err = e as Error;
+    }
+    expect(err).toBeDefined();
+    expect(err!.message).toMatch(/non-JSON response/);
+    expect(err!.message).not.toMatch(/authentication failure/);
+  });
+
   it("reports a non-HTML/empty non-JSON 2xx body neutrally, not as an auth failure", async () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(emptyResponse()));
     let err: Error | undefined;
