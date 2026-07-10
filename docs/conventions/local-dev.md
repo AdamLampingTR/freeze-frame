@@ -5,6 +5,25 @@ Extracted from `docs/superpowers/specs/2026-07-08-freeze-frame-mvp.md`
 ("Local development / testing"). This is the documented SWA dev workflow,
 not something to invent per-task.
 
+## Quickstart (one command)
+
+```bash
+# one-time
+npm i -g azure-functions-core-tools@4 @azure/static-web-apps-cli azurite
+cp api/local.settings.json.example api/local.settings.json   # then fill in 2 read-only ADO PATs
+
+# every time
+./scripts/dev-local.sh
+```
+
+`scripts/dev-local.sh` checks prerequisites, builds `api/`, then starts Azurite
++ the Functions host + the SWA dev server in the right order and tears them all
+down on Ctrl-C. When it prints the banner, open **http://localhost:4280** — the
+SWA proxy, **not** `:5173`; the `/api` routes only exist behind the proxy.
+
+The rest of this doc explains what each process does and why, for when you want
+to run them by hand or debug one in isolation.
+
 ## Why the SWA CLI is the front door
 
 `swa start` is not optional scaffolding — its auth emulation supplies the
