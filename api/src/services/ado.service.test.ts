@@ -19,6 +19,14 @@ function htmlResponse() {
   } as unknown as Response);
 }
 
+function emptyResponse() {
+  return Promise.resolve({
+    ok: true,
+    status: 200,
+    text: () => Promise.resolve("   "),
+  } as unknown as Response);
+}
+
 describe("ado.service", () => {
   beforeEach(() => {
     process.env.ADO_REPOS_ORG = "ThoughtTrace";
@@ -86,11 +94,24 @@ describe("ado.service", () => {
     expect(wi.assignedTo).toBe("user@example.com");
   });
 
-  it("gives a clear auth-failure message when ADO returns an HTML sign-in page", async () => {
+  it("attributes an HTML sign-in page to an auth failure", async () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(htmlResponse()));
     await expect(commitsBatch("R", "staging", "development")).rejects.toThrow(
-      /non-JSON response.*authentication failure.*check the service PAT/,
+      /HTML page.*authentication failure.*check the service PAT/,
     );
+  });
+
+  it("reports a non-HTML/empty non-JSON 2xx body neutrally, not as an auth failure", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(emptyResponse()));
+    let err: Error | undefined;
+    try {
+      await commitsBatch("R", "staging", "development");
+    } catch (e) {
+      err = e as Error;
+    }
+    expect(err).toBeDefined();
+    expect(err!.message).toMatch(/non-JSON response.*\(empty\)/);
+    expect(err!.message).not.toMatch(/authentication failure/);
   });
 
   it("fetchWorkItems returns empty map for no ids without calling fetch", async () => {
