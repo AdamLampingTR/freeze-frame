@@ -34,7 +34,13 @@ fi
 [ -d frontend/node_modules ] || { echo "→ installing frontend deps"; (cd frontend && npm install); }
 [ -d api/node_modules ] || { echo "→ installing api deps"; (cd api && npm install); }
 echo "→ building api"
-(cd api && npm run build)
+# Guard explicitly: the script runs without `set -e` (so the readiness poll's
+# `&& break` doesn't abort it), so a tsc failure here would otherwise start func
+# against a stale/absent dist/ and surface as a confusing runtime error.
+(cd api && npm run build) || {
+  echo "✗ api build failed — fix the TypeScript errors above, then re-run."
+  exit 1
+}
 
 # ---- start everything, clean up on exit ----------------------------------
 pids=()
@@ -60,19 +66,28 @@ echo "→ starting the Functions host on :7071"
 echo "→ starting the frontend dev server on :5173"
 (cd frontend && npm run dev -- --port 5173) & pids+=($!)
 
-echo "→ waiting for the frontend and API to come up…"
-for _ in $(seq 1 40); do
-  curl -sf http://localhost:5173 >/dev/null 2>&1 && break
+# Wait for BOTH the frontend (:5173) and the API (:7071, the slower cold start)
+# to be listening before the proxy fronts them. `-o /dev/null` (not `-f`) so a
+# 502 from the API still counts as "up" — we only care that it responds.
+echo "→ waiting for the frontend (:5173) and API (:7071) to come up…"
+for _ in $(seq 1 60); do
+  if curl -s -o /dev/null http://localhost:5173 2>/dev/null &&
+    curl -s -o /dev/null http://localhost:7071/api/skips 2>/dev/null; then
+    break
+  fi
   sleep 1
 done
 
 echo
 echo "════════════════════════════════════════════════════════════"
-echo "  FreezeFrame local loop is up →  http://localhost:4280"
-echo "  (open :4280, not :5173 — /api only works through the proxy)"
+echo "  Frontend (:5173) and API (:7071) are up."
+echo "  Starting the SWA proxy — it serves everything at:"
+echo "      →  http://localhost:4280   (open this, NOT :5173)"
+echo "  Give it a few seconds to bind, then load the page."
 echo "  Press Ctrl-C to stop everything."
 echo "════════════════════════════════════════════════════════════"
 echo
 
-# Foreground: the SWA proxy. When it exits (Ctrl-C), the trap cleans up the rest.
+# Foreground: the SWA proxy (binds :4280). When it exits (Ctrl-C), the trap
+# cleans up Azurite, func, and the dev server.
 swa start http://localhost:5173 --api-devserver-url http://localhost:7071
