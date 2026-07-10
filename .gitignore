@@ -28,3 +28,5 @@ infra/power-automate/*.zip
 .cursor/personal/
 # OS
 .DS_Store
+# azurite
+.azurite

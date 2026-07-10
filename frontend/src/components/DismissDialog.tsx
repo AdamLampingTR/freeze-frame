@@ -68,6 +68,7 @@ export function DismissDialog({
         <div className="dialog-actions">
           <button onClick={onCancel}>Cancel</button>
           <button
+            className="btn-primary"
             onClick={() =>
               onConfirm({ reason, kind, reasonText: reasonText || undefined })
             }

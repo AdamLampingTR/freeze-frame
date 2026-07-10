@@ -83,7 +83,11 @@ export function App() {
             void refresh(r);
           }}
         />
-        <button onClick={() => void refresh(release)} disabled={loading}>
+        <button
+          className="btn-primary"
+          onClick={() => void refresh(release)}
+          disabled={loading}
+        >
           {loading ? "Refreshing…" : "Refresh"}
         </button>
       </header>
