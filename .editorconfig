@@ -1,0 +1,18 @@
+# EditorConfig — https://editorconfig.org
+# Baseline whitespace/encoding conventions for every editor. Matches Prettier's
+# defaults (2-space, LF, final newline) and covers the files Prettier does NOT
+# format (.gitignore, shell scripts, .funcignore), which is where a missing
+# trailing newline otherwise slips in.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Markdown uses trailing spaces for hard line breaks — don't strip them.
+[*.md]
+trim_trailing_whitespace = false
