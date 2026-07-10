@@ -66,7 +66,11 @@ async function req<T>(
     return JSON.parse(body) as T;
   } catch {
     const trimmed = body.trim();
-    if (trimmed.startsWith("<")) {
+    // Match an actual HTML document only (the ADO sign-in page) — not any `<`.
+    // An XML fault/error doc also starts with `<` but isn't an auth signal, so
+    // it falls through to the neutral message below.
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith("<!doctype html") || lower.startsWith("<html")) {
       throw new Error(
         `ADO returned an HTML page from ${endpoint} (status ${res.status}) — likely an authentication failure; check the service PAT.`,
       );
