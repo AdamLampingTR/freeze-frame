@@ -31,7 +31,8 @@ export interface FreezeCandidate {
   title: string; // commit subject, first line
   author: string | null; // email
   tickets: Ticket[];
-  status: FlagStatus;
+  status: FlagStatus; // the single worst flag — drives color/dot/stats
+  statuses: FlagStatus[]; // all distinct issue categories hit, worst-first — drives the combined label
   flags: string[]; // human-readable flag lines (for UI + notify payload)
   releaseTags: string[]; // release tags on the candidate's US/Bug tickets (for the row header)
   matchesRelease: boolean; // a ticket tag resolves to the selected target release

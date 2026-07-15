@@ -22,6 +22,7 @@ const candidate: FreezeCandidate = {
     },
   ],
   status: "bad-state",
+  statuses: ["bad-state"],
   flags: ["❌ ..."],
   releaseTags: [],
   matchesRelease: false,

@@ -13,7 +13,12 @@ export function evaluate(
   tickets: Ticket[],
   rules: RulesConfig,
   now: Date,
-): { status: FlagStatus; flags: string[]; excluded: boolean } {
+): {
+  status: FlagStatus;
+  statuses: FlagStatus[];
+  flags: string[];
+  excluded: boolean;
+} {
   const relevant = tickets.filter((t) =>
     rules.workItemTypes.includes(t.workItemType),
   );
@@ -21,11 +26,8 @@ export function evaluate(
     // requireWorkItemReference gates whether a missing US/Bug link is surfaced:
     // true (the default) routes the candidate to the no-ticket bucket; false
     // treats a reference-less candidate as ready (no work item required).
-    return {
-      status: rules.requireWorkItemReference ? "no-ticket" : "ready",
-      flags: [],
-      excluded: false,
-    };
+    const status = rules.requireWorkItemReference ? "no-ticket" : "ready";
+    return { status, statuses: [status], flags: [], excluded: false };
   }
 
   const flags: string[] = [];
@@ -36,7 +38,12 @@ export function evaluate(
     ready: 1,
     "no-ticket": 0,
   };
+  // All distinct issue categories hit, worst-first — lets the UI surface every
+  // problem (e.g. "Wrong state / Needs tag") while `status` (the single worst)
+  // still drives color/dot/stats, per the spec's "overall status is the worst flag".
+  const hit = new Set<FlagStatus>();
   const bump = (s: FlagStatus) => {
+    hit.add(s);
     if (rank[s] > rank[worst]) worst = s;
   };
 
@@ -60,5 +67,10 @@ export function evaluate(
     }
   }
 
-  return { status: worst, flags, excluded: allPastOnly };
+  const statuses =
+    hit.size > 0
+      ? Array.from(hit).sort((a, b) => rank[b] - rank[a])
+      : [worst];
+
+  return { status: worst, statuses, flags, excluded: allPastOnly };
 }
