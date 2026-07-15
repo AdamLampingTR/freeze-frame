@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FreezeCandidate, NotifyVia } from "../types";
-import { statusDot, statusLabel } from "../lib/status";
+import { statusDot, combinedStatusLabel } from "../lib/status";
 import { NotifyMenu } from "./NotifyMenu";
 
 export function CandidateRow({
@@ -45,7 +45,7 @@ export function CandidateRow({
             {t}
           </span>
         ))}
-        <span className="flag">{statusLabel(c.status)}</span>
+        <span className="flag">{combinedStatusLabel(c.statuses)}</span>
       </div>
       {open && (
         <div className="row-detail">

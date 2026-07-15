@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { statusColor, statusLabel, statusDot } from "./status";
+import { statusColor, statusLabel, statusDot, combinedStatusLabel } from "./status";
 
 describe("statusColor", () => {
   it("maps each status to its color", () => {
@@ -16,5 +16,16 @@ describe("statusLabel / statusDot", () => {
     expect(statusLabel("ready")).toBe("Ready");
     expect(statusDot("ready")).toBe("dot-green");
     expect(statusDot("bad-state")).toBe("dot-red");
+  });
+});
+
+describe("combinedStatusLabel", () => {
+  it("joins multiple statuses, worst first", () => {
+    expect(combinedStatusLabel(["bad-state", "warning"])).toBe(
+      "Wrong state / Needs tag",
+    );
+  });
+  it("returns the single label when only one status applies", () => {
+    expect(combinedStatusLabel(["ready"])).toBe("Ready");
   });
 });

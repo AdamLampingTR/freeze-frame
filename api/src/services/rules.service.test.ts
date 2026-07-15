@@ -31,6 +31,15 @@ describe("rules.evaluate", () => {
   it("warning when no release tag", () => {
     expect(evaluate([t({ tags: ["SRE"] })], RULES, NOW).status).toBe("warning");
   });
+  it("reports both bad-state and warning when a ticket fails both checks", () => {
+    const r = evaluate(
+      [t({ state: "Ready for QA Testing", tags: ["SRE"] })],
+      RULES,
+      NOW,
+    );
+    expect(r.status).toBe("bad-state");
+    expect(r.statuses).toEqual(["bad-state", "warning"]);
+  });
   it("no-ticket when only non-US/Bug types are linked", () => {
     expect(evaluate([t({ workItemType: "Task" })], RULES, NOW).status).toBe(
       "no-ticket",

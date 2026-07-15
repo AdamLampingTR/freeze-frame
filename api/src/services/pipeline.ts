@@ -148,6 +148,7 @@ export async function buildCandidates(
       author: candidate.author,
       tickets,
       status: result.status,
+      statuses: result.statuses,
       flags: result.flags,
       releaseTags,
       matchesRelease,

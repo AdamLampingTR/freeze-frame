@@ -30,3 +30,7 @@ export function statusDot(status: FlagStatus): string {
     "no-ticket": "dot-grey",
   }[status];
 }
+
+export function combinedStatusLabel(statuses: FlagStatus[]): string {
+  return statuses.map(statusLabel).join(" / ");
+}
